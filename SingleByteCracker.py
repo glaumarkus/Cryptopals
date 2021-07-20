@@ -108,7 +108,7 @@ class SingleCharXORCracker:
 			bytearray(
 				[byte ^ self.result.char for byte in bytestring]
 				)
-			)
+			)[:-1]
 
 	def successful(self):
 		return self.success
