@@ -18,16 +18,19 @@ class probabilityRatio:
 		self.wordRatio = 0.0
 
 	def __float__(self):
-		if mode==CrackerMode.CHARONLY:
+		if self.mode==CrackerMode.CHARONLY:
 			return self.charRatio
-		elif mode==CrackerMode.WORDONLY:
+		elif self.mode==CrackerMode.WORDONLY:
 			return self.wordRatio
 		return ( self.wordRatio + self.charRatio )
 
+	def __str__(self):
+		return str(self.__float__())
+
 	def __gt__(self, other):
-		if mode==CrackerMode.CHARONLY:
+		if self.mode==CrackerMode.CHARONLY:
 			return self.charRatio > other
-		elif mode==CrackerMode.WORDONLY:
+		elif self.mode==CrackerMode.WORDONLY:
 			return self.wordRatio > other
 		return ( self.wordRatio + self.charRatio ) > other
 
@@ -43,6 +46,7 @@ class crackResult():
 	def __init__(self):
 		self.msgEncrypted = None
 		self.msgDecrypted = None
+		self.probability = None
 		self.char = None
 		self.charStr = None
 
@@ -57,7 +61,10 @@ class SingleCharXORCracker:
 		self.result = crackResult()
 		self.success = False
 
-	def crack(bytestring):
+	def crack(self, bytestring):
+
+		if type(bytestring) != bytearray:
+			raise Exception('Input is not in Bytes Format!')
 
 		# iterate through charset and evaluate based on mode
 		for char in range(256):
@@ -66,7 +73,7 @@ class SingleCharXORCracker:
 				[byte ^ char for byte in bytestring]
 				)
 			)
-			ratio = probabilityRatio(mode)
+			ratio = probabilityRatio(self.mode)
 			ratio.charRatio = numAsciiChars(tmpString)
 
 			if (self.mode == 1):
@@ -93,12 +100,13 @@ class SingleCharXORCracker:
 
 		# fill record
 		self.success = True
-		self.result.char = self.tracker.ordered[next(iter(self.tracker.ordered))]
+		self.result.char = next(iter(self.tracker.ordered))
 		self.result.charStr = chr(self.result.char)
+		self.result.probability = float(self.tracker.ordered[self.result.char])
 		self.result.msgEncrypted = bytestring
 		self.result.msgDecrypted = bytes2str(
 			bytearray(
-				[byte ^ char for byte in bytestring]
+				[byte ^ self.result.char for byte in bytestring]
 				)
 			)
 
@@ -110,3 +118,12 @@ class SingleCharXORCracker:
 
 	def getDecryptedMsg(self):
 		return self.result.msgDecrypted
+
+	def printResult(self):
+		print('###########################')
+		print('SingleCharXORCracker Result')
+		print(f'Char: {self.result.char} // {self.result.charStr}')
+		print(f'Msg: {self.result.msgDecrypted}')
+		print('###########################')
+
+

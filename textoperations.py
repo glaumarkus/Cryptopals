@@ -34,24 +34,23 @@ def numEnglishWords(string):
 	return matchedChars / sumChars
 
 def hammingDist(first, second):
-	if type(first) == str:
-		first = str2bytes(first)
-	if type(second) == str:
-		second = str2bytes(second)
 
-    distance = 0
-    for i in range(len(first)):
-        x = first[i] ^ second[i]
-        bits = 0
-        while (x > 0):
-            bits += x & 1
-            x >>= 1
-        distance += bits
-    return distance
+	if type(first) == str or type(second) == str:
+		raise Exception('Input is not in Bytes Format!')
+
+	distance = 0
+	for i in range(len(first)):
+		x = first[i] ^ second[i]
+		bits = 0
+		while (x > 0):
+			bits += x & 1
+			x >>= 1
+		distance += bits
+	return distance
 
 
 def makeBlocks(data, keysize):
 	keysizeBlocks = {i:[] for i in range(keysize)}
 	for idx, byte in enumerate(data):
-	    keysizeBlocks[idx % keysize].append(byte)
+		keysizeBlocks[idx % keysize].append(byte)
 	return keysizeBlocks
