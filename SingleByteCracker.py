@@ -104,6 +104,12 @@ class SingleCharXORCracker:
 				)
 			)[:-1]
 
+	def __float__(self):
+		return self.result.probability
+
+	def __gt__(self, other):
+		return self.result.probability > float(other)
+
 	def successful(self):
 		return self.success
 

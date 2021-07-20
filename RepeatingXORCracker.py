@@ -27,7 +27,7 @@ class RepeatingXORCracker():
 		for blockId in datablocks.keys():
 
 			blockstring = datablocks[blockId]
-			cracker = SingleCharXORCracker(mode=1)
+			cracker = SingleCharXORCracker(mode=CrackerMode.CHARONLY)
 			cracker.crack(bytearray(blockstring))
 
 			if cracker.success:
