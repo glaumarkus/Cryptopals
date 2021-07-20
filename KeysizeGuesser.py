@@ -1,5 +1,6 @@
 from itertools import combinations
 from textoperations import *
+from utility import *
 
 
 class probabilityTracker:
@@ -19,29 +20,30 @@ class KeysizeGuesser():
 	def guess(self, data):
 
 		for keysize in range(self.start, self.end):
-		    
-		    blocks = []
-		    for i in range(self.numKeysizes):
-		        start = i * keysize
-		        end = (i * keysize) + keysize
-		        blocks.append(data[start : end])
-		    
-		    pairs = combinations(blocks, 2)
-		    distance = 0.0
-		    
-		    for (first, second) in pairs:
-		        dist += hammingDist(first, second)
-		    
-		    distance /= len(combinations)
-		    distance /= keysize
-		    
-		    self.probabilityTracker.ratios[keysize] = distance
-		    distances[dist] = keysize
+			
+			blocks = []
+			for i in range(self.numKeysizes):
+				start = i * keysize
+				end = (i * keysize) + keysize
+				blocks.append(data[start : end])
+			
+			pairs = combinations(blocks, 2)
+			distance = 0.0
+			length = 0
 
-			self.probabilityTracker.ordered = sortDict(self.probabilityTracker.ratios)
+			for (first, second) in pairs:
+				length += 1
+				distance += hammingDist(first, second)
+			
+			distance /= length
+			distance /= keysize
+			
+			self.record.ratios[keysize] = distance
+
+		self.record.ordered = sortDict(self.record.ratios, reverse=False)
 
 	def getKeysize(self):
-		return next(iter(self.tracker.ordered))
+		return next(iter(self.record.ordered))
 
 
 

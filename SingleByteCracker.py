@@ -53,13 +53,14 @@ class crackResult():
 
 class SingleCharXORCracker:
 
-	def __init__(self, mode=2, thresholdChars=0.7, thresholdWords=0.6):
+	def __init__(self, mode=2, thresholdWords=0.6, wordListMode=WordListMode.MEDIUM):
 		self.mode = mode
 		self.tracker = probabilityTracker()
-		self.thresholdChars = thresholdChars
 		self.thresholdWords = thresholdWords
 		self.result = crackResult()
 		self.success = False
+		self.wordListMode = wordListMode
+
 
 	def crack(self, bytestring):
 
@@ -74,24 +75,20 @@ class SingleCharXORCracker:
 				)
 			)
 			ratio = probabilityRatio(self.mode)
-			ratio.charRatio = numAsciiChars(tmpString)
+			ratio.charRatio = numFrequencyEstimation(tmpString)
 
 			if (self.mode == 1):
 				self.tracker.ratios[char] = ratio
 				continue
 			
-			ratio.wordRatio = numEnglishWords(tmpString)
+			ratio.wordRatio = numEnglishWords(tmpString, self.wordListMode)
 			self.tracker.ratios[char] = ratio
 
 		# evaluate best matches
 		filterValue = 0.0
-		if (self.mode == 1):
-			filterValue = self.thresholdChars
-		elif (self.mode == 2):
+		if (self.mode == 2) or (self.mode == 3):
 			filterValue = self.thresholdWords
-		elif self.mode == 3:
-			filterValue = self.thresholdChars + self.thresholdWords
-		
+
 		self.tracker.ordered = sortDict(self.tracker.ratios, filterValue=filterValue)
 
 		# if not found
@@ -123,6 +120,7 @@ class SingleCharXORCracker:
 		print('###########################')
 		print('SingleCharXORCracker Result')
 		print(f'Char: {self.result.char} // {self.result.charStr}')
+		print(f'Probability: {self.result.probability}')
 		print(f'Msg: {self.result.msgDecrypted}')
 		print('###########################')
 

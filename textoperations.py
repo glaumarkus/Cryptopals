@@ -1,4 +1,5 @@
 from converters import *
+from enum import Enum
 
 def isTextChar(char):
 	if (type(char) == str):
@@ -10,10 +11,7 @@ def findKeysize(data):
 
 def getWordList():
 	with open('englishwords.txt', 'r') as f:
-		wordList = {
-			word:idx 
-			for idx, word in enumerate(f.read().split('\n')) 
-		}
+		wordList = [word for word in f.read().split('\n')]
 	return wordList
 
 def numAsciiChars(string):
@@ -23,15 +21,53 @@ def numAsciiChars(string):
 			true += 1
 	return (true / len(string))
 
-def numEnglishWords(string):
-	words = [word for word in string.split(' ')]
-	sumChars = sum([len(word) for word in words if len(word) > 2])
-	wordList = getWordList()
+
+charFrequency = {
+	'a': 0.8167, 'b': 0.1492, 'c': 0.2782, 'd': 0.4253, 'e': 0.12702,
+	'f': 0.2228, 'g': 0.2015, 'h': 0.6094, 'i': 0.6966, 'j': 0.0153,
+	'k': 0.0772, 'l': 0.4025, 'm': 0.2406, 'n': 0.6749, 'o': 0.7507,
+	'p': 0.1929, 'q': 0.0095, 'r': 0.5987, 's': 0.6327, 't': 0.9056,
+	'u': 0.2758, 'v': 0.0978, 'w': 0.2360, 'x': 0.0150, 'y': 0.1974,
+	'z': 0.0074, ' ': 0.128,
+}
+
+def numCharFrequency(char):
+	try:
+		if(ord(char) > 64 and ord(char) < 90):
+			return charFrequency[char.lower()]
+		return charFrequency[char]
+	except KeyError:
+		return 0.0
+
+def numFrequencyEstimation(string):
+	return sum([numCharFrequency(char) for char in string])
+
+class WordListMode(Enum):
+	SMALL = 1
+	MEDIUM = 2
+	LARGE = 3
+	ALL = 4
+
+
+def numEnglishWords(string, wordListMode=WordListMode.MEDIUM):
+	words = [word.lower() for word in string.split(' ')]
+	sumChars = sum([len(word) for word in words if len(word) > 1])
+	
+	if wordListMode == WordListMode.SMALL:
+		wordList = englishWordListSmall
+	elif wordListMode == WordListMode.MEDIUM:
+		wordList = englishWordListMedium
+	elif wordListMode == WordListMode.LARGE:
+		wordList = englishWordListLarge
+	else:
+		wordList = englishWordListAll
+
 	matchedChars = 0
 	for word in words:
-		if word in wordList.keys() and len(word) > 2:
+		if word in wordList and len(word) > 1:
 			matchedChars += len(word)
 	return matchedChars / sumChars
+
 
 def hammingDist(first, second):
 
@@ -54,3 +90,9 @@ def makeBlocks(data, keysize):
 	for idx, byte in enumerate(data):
 		keysizeBlocks[idx % keysize].append(byte)
 	return keysizeBlocks
+
+
+englishWordListAll = getWordList()
+englishWordListSmall = englishWordListAll[:100]
+englishWordListMedium = englishWordListAll[:500]
+englishWordListLarge = englishWordListAll[:1000]
