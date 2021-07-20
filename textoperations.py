@@ -10,7 +10,7 @@ def findKeysize(data):
 	return None
 
 def getWordList():
-	with open('englishwords.txt', 'r') as f:
+	with open('files/englishwords.txt', 'r') as f:
 		wordList = [word for word in f.read().split('\n')]
 	return wordList
 
