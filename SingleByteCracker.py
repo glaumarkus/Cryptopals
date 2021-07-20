@@ -12,7 +12,7 @@ class CrackerMode(Enum):
 
 class probabilityRatio:
 
-	def __init__(self, mode=2):
+	def __init__(self, mode=CrackerMode.CHARONLY):
 		self.mode = mode
 		self.charRatio = 0.0
 		self.wordRatio = 0.0
@@ -22,7 +22,7 @@ class probabilityRatio:
 			return self.charRatio
 		elif self.mode==CrackerMode.WORDONLY:
 			return self.wordRatio
-		return ( self.wordRatio + self.charRatio )
+		return 0.0
 
 	def __str__(self):
 		return str(self.__float__())
@@ -53,14 +53,14 @@ class crackResult():
 
 class SingleCharXORCracker:
 
-	def __init__(self, mode=2, thresholdWords=0.6, wordListMode=WordListMode.MEDIUM):
+	def __init__(self, mode=CrackerMode.BOTH, thresholdWords=0.4, wordListMode=WordListMode.MEDIUM):
 		self.mode = mode
-		self.tracker = probabilityTracker()
 		self.thresholdWords = thresholdWords
+		self.metrics = {}
+		self.metricsOrdered = None
 		self.result = crackResult()
 		self.success = False
 		self.wordListMode = wordListMode
-
 
 	def crack(self, bytestring):
 
@@ -69,37 +69,34 @@ class SingleCharXORCracker:
 
 		# iterate through charset and evaluate based on mode
 		for char in range(256):
+
+			# xor data
 			tmpString = bytes2str(
 			bytearray(
 				[byte ^ char for byte in bytestring]
 				)
 			)
-			ratio = probabilityRatio(self.mode)
-			ratio.charRatio = numFrequencyEstimation(tmpString)
 
-			if (self.mode == 1):
-				self.tracker.ratios[char] = ratio
-				continue
-			
-			ratio.wordRatio = numEnglishWords(tmpString, self.wordListMode)
-			self.tracker.ratios[char] = ratio
+			# fill metrics
+			if self.mode == CrackerMode.CHARONLY:
+				self.metrics[char] = numFrequencyEstimation(tmpString)
 
-		# evaluate best matches
-		filterValue = 0.0
-		if (self.mode == 2) or (self.mode == 3):
-			filterValue = self.thresholdWords
+			if self.mode == CrackerMode.WORDONLY:
+				self.metrics[char] = numEnglishWords(tmpString, self.wordListMode)
 
-		self.tracker.ordered = sortDict(self.tracker.ratios, filterValue=filterValue)
+
+		# order dictionary with valsu
+		self.metricsOrdered = sortDict(self.metrics, reverse=True)
 
 		# if not found
-		if len(self.tracker.ordered) == 0:
+		if len(list(self.metricsOrdered.keys())) == 0:
 			return
 
 		# fill record
 		self.success = True
-		self.result.char = next(iter(self.tracker.ordered))
+		self.result.char = next(iter(self.metricsOrdered))
 		self.result.charStr = chr(self.result.char)
-		self.result.probability = float(self.tracker.ordered[self.result.char])
+		self.result.probability = float(self.metricsOrdered[self.result.char])
 		self.result.msgEncrypted = bytestring
 		self.result.msgDecrypted = bytes2str(
 			bytearray(
