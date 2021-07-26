@@ -3,7 +3,7 @@ from utility import *
 import base64
 from Crypto.Cipher import AES
 from math import ceil
-
+import os
 
 
 
@@ -241,3 +241,9 @@ class ECBCracker:
 			
 		return bytes2str(b''.join(plaintext))
 
+
+'''
+random key
+'''
+def getRandomBytes(n):
+	return os.urandom(n)

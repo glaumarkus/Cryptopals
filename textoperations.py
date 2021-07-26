@@ -1,4 +1,5 @@
 from converters import *
+from crypto import *
 from enum import Enum
 
 def isTextChar(char):
@@ -90,6 +91,39 @@ def makeBlocks(data, keysize):
 	for idx, byte in enumerate(data):
 		keysizeBlocks[idx % keysize].append(byte)
 	return keysizeBlocks
+
+
+def decodeURLParams(string):
+	return {
+		pair.split('=')[0] : pair.split('=')[1]
+		for pair in string.split('&')
+	}
+
+def parseUserData(userData):
+	email = userData['email']
+	uid = userData['uid']
+	role = userData['role']
+	return f'email={email}&uid={uid}&role={role}'
+
+def profileFor(string):
+	procString = string.split('&')[0]
+	userData = {
+		'email' : string,
+		'uid' : 10,
+		'role' : 'user'
+	}
+	return parseUserData(userData)
+
+def encryptUserProfile(userData, key):
+	cipher = Cipher(key)
+	encoded = cipher.encryptECB(userData)
+	return encoded
+
+def decryptUserProfile(userData, key):
+	cipher = Cipher(key)
+	decoded = cipher.encryptECB(userData)
+	return decoded
+
 
 
 englishWordListAll = getWordList()
