@@ -108,7 +108,7 @@ def parseUserData(userData):
 def profileFor(string):
 	procString = string.split('&')[0]
 	userData = {
-		'email' : string,
+		'email' : procString,
 		'uid' : 10,
 		'role' : 'user'
 	}

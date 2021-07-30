@@ -46,9 +46,26 @@ def pkcs7padding(plaintext, blocksize=16):
 
 
 '''
+check for valid pkcs7 padding
+'''
+def hasValidPadding(string):
+    if type(string[-1]) == str:
+        string = bytes(string, encoding='utf-8')
+    pads = string[-1]
+    if type(pads) == int:
+        for i in range(1, pads + 1):
+            if string[-i] != pads:
+            	return False
+    return True  
+
+'''
 remove pkcs7 padding function
 '''
 def removepkcs7padding(plaintext):
+	if not hasValidPadding(plaintext):
+		raise Exception('Incorrect padding!')
+	if type(plaintext) == str:
+		plaintext = bytes(plaintext, encoding='utf-8')
 	if type(plaintext[-1]) == int:
 		plaintext = plaintext[:-plaintext[-1]]
 	return bytes2str(plaintext)
@@ -192,6 +209,9 @@ class ECBCracker:
 				
 	def encrypt(self, buffer, data):
 		return self.cipher.encryptECB(buffer + data)
+
+	def encryptWithPadding(self, padding, buffer, data):
+		return self.cipher.encryptECB(padding + buffer + data)
 	
 	def findBlocksize(self):
 		initSize = len(self.encrypt(b'x',b''))
